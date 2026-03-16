@@ -1,0 +1,103 @@
+export const translations = {
+  id: {
+    nav: { home: 'Beranda', explore: 'Jelajah', login: 'Masuk' },
+    hero: {
+      tagline: 'Cari tempat seru, cafe kece & pantai cakep! 🌴',
+      placeholder: 'Ketik nama tempat atau area...',
+      searchBtn: 'CARI SEKARANG!',
+      notFound: 'Ga ketemu nih...',
+      notFoundSub: 'Coba kata kunci lain yaa!',
+    },
+    home: {
+      contributorTitle: 'Terima kasih kepada kontributor kami! 🙏',
+      contributorSub: 'Mereka yang udah bantuin bikin database ini makin lengkap',
+      marquee: '✨ JELAJAH BATAM SERU BANGET ✨ TEMUKAN SPOT FAVORITMU ✨',
+      footerDesc: 'Bikin jalan-jalanmu di Batam makin asik dan anti-boring! Temukan hidden gem, cafe hits, dan pantai cakep di satu tempat. 🌴',
+      footerCategories: '📁 KATEGORI',
+    },
+    jelajah: {
+      title: 'Jelajah Batam! 🗺️',
+      subtitle: 'Pilih kategori dan temukan tempat favoritmu',
+      backHome: '← Kembali ke Home',
+      placesCount: (n: number) => `${n} tempat →`,
+    },
+    category: {
+      backHome: '← Kembali ke Home',
+      filterAll: '🌟 Semua',
+      empty: 'Belum ada tempat di sini',
+      emptySub: 'Coba pilih filter lain atau kembali ke semua',
+      found: (n: number) => `${n} tempat ditemukan`,
+    },
+    detail: {
+      about: 'Tentang Tempat Ini',
+      reviews: (n: number) => `Ulasan (${n})`,
+      reviewCount: (n: number) => `(${n} ulasan)`,
+      noReviews: 'Belum ada ulasan. Jadilah yang pertama! 💬',
+      location: 'Lokasi',
+      openMaps: 'Buka di Google Maps →',
+      noCoords: 'Koordinat belum tersedia',
+      infoTitle: 'Info Singkat',
+      infoCategory: 'Kategori',
+      infoRating: 'Rating',
+    },
+    search: {
+      title: 'Hasil Pencarian',
+      backHome: '← Kembali ke Home',
+      empty: 'Ga ketemu nih...',
+      emptySub: 'Coba kata kunci lain yaa!',
+      found: (n: number, q: string) => `${n} tempat ditemukan untuk "${q}"`,
+    },
+  },
+  en: {
+    nav: { home: 'Home', explore: 'Explore', login: 'Login' },
+    hero: {
+      tagline: 'Find cool spots, trendy cafes & beautiful beaches! 🌴',
+      placeholder: 'Type a place name or area...',
+      searchBtn: 'SEARCH NOW!',
+      notFound: 'Nothing found...',
+      notFoundSub: 'Try another keyword!',
+    },
+    home: {
+      contributorTitle: 'Thank you to our contributors! 🙏',
+      contributorSub: 'Those who helped make our database more complete',
+      marquee: '✨ EXPLORE BATAM IS A BLAST ✨ FIND YOUR FAVORITE SPOT ✨',
+      footerDesc: 'Make your Batam trip more fun and exciting! Find hidden gems, trendy cafes, and beautiful beaches in one place. 🌴',
+      footerCategories: '📁 CATEGORIES',
+    },
+    jelajah: {
+      title: 'Explore Batam! 🗺️',
+      subtitle: 'Choose a category and find your favorite places',
+      backHome: '← Back to Home',
+      placesCount: (n: number) => `${n} places →`,
+    },
+    category: {
+      backHome: '← Back to Home',
+      filterAll: '🌟 All',
+      empty: 'No places here yet',
+      emptySub: 'Try another filter or go back to all',
+      found: (n: number) => `${n} places found`,
+    },
+    detail: {
+      about: 'About This Place',
+      reviews: (n: number) => `Reviews (${n})`,
+      reviewCount: (n: number) => `(${n} reviews)`,
+      noReviews: 'No reviews yet. Be the first! 💬',
+      location: 'Location',
+      openMaps: 'Open in Google Maps →',
+      noCoords: 'Coordinates not available',
+      infoTitle: 'Quick Info',
+      infoCategory: 'Category',
+      infoRating: 'Rating',
+    },
+    search: {
+      title: 'Search Results',
+      backHome: '← Back to Home',
+      empty: 'Nothing found...',
+      emptySub: 'Try another keyword!',
+      found: (n: number, q: string) => `${n} places found for "${q}"`,
+    },
+  },
+} as const;
+
+export type Lang = 'id' | 'en';
+export type Translations = typeof translations.id;

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panduan Deploy — Explore Batam</title>
+  <style>
+    /* ── Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #1a1a2e;
+      background: #fff;
+      padding: 0;
+    }
+
+    /* ── Cover Page ── */
+    .cover {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #fff;
+      text-align: center;
+      padding: 60px 40px;
+      page-break-after: always;
+    }
+    .cover .badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 6px 20px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .cover h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+    .cover h1 span { color: #e94560; }
+    .cover .subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 48px;
+      max-width: 480px;
+    }
+    .cover .meta {
+      display: flex;
+      gap: 40px;
+      margin-top: 48px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 32px;
+    }
+    .cover .meta-item { text-align: center; }
+    .cover .meta-item .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); }
+    .cover .meta-item .value { font-size: 13px; font-weight: 600; color: #fff; }
+    .cover .stack-pills { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 24px; }
+    .cover .pill {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    /* ── Section ── */
+    .section { margin-bottom: 40px; }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f3460;
+      border-bottom: 3px solid #e94560;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title .num {
+      background: #e94560;
+      color: #fff;
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* ── Steps ── */
+    .steps { counter-reset: step; }
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 18px 20px;
+      background: #f8f9fc;
+      border-radius: 10px;
+      border-left: 4px solid #0f3460;
+    }
+    .step-num {
+      background: #0f3460;
+      color: #fff;
+      border-radius: 50%;
+      min-width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-content h4 { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+    .step-content p { font-size: 12px; color: #444; }
+    .step.accent { border-left-color: #e94560; }
+    .step.accent .step-num { background: #e94560; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: #1a1a2e;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11.5px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    code {
+      background: #eef2f7;
+      color: #c0392b;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11.5px;
+    }
+    pre code { background: none; color: inherit; padding: 0; border-radius: 0; }
+    .comment { color: #718096; }
+    .keyword { color: #68d391; }
+    .string { color: #fc8181; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 12px;
+    }
+    thead tr { background: #0f3460; color: #fff; }
+    thead th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    tbody tr:nth-child(even) { background: #f4f7fb; }
+    tbody tr:hover { background: #e8f0fe; }
+    td { padding: 9px 14px; border-bottom: 1px solid #e5e9f0; vertical-align: top; }
+    td:first-child { font-family: 'Consolas', monospace; font-size: 11px; color: #c0392b; font-weight: 600; white-space: nowrap; }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 16px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 12px;
+    }
+    .callout.info { background: #e8f0fe; border-left: 4px solid #3b82f6; color: #1e3a8a; }
+    .callout.warn { background: #fef9e7; border-left: 4px solid #f59e0b; color: #78350f; }
+    .callout.danger { background: #fde8e8; border-left: 4px solid #e94560; color: #7f1d1d; }
+    .callout.success { background: #e6f4ea; border-left: 4px solid #22c55e; color: #14532d; }
+    .callout .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .callout strong { display: block; margin-bottom: 4px; font-size: 12.5px; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; margin: 10px 0; }
+    .checklist li {
+      padding: 7px 0 7px 28px;
+      position: relative;
+      border-bottom: 1px dashed #e5e9f0;
+      font-size: 12px;
+    }
+    .checklist li::before {
+      content: '☐';
+      position: absolute; left: 0;
+      color: #0f3460; font-size: 14px;
+    }
+
+    /* ── Verification ── */
+    .verify-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+    .verify-card {
+      background: #f8f9fc;
+      border: 1px solid #e5e9f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .verify-card .url { font-family: monospace; font-size: 11px; color: #0f3460; font-weight: 600; }
+    .verify-card .desc { font-size: 11px; color: #666; margin-top: 4px; }
+    .verify-card .status { font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 6px; }
+
+    /* ── Page header/footer ── */
+    .page-header {
+      border-bottom: 1px solid #e5e9f0;
+      padding-bottom: 16px;
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .page-header .brand { font-size: 12px; font-weight: 700; color: #0f3460; }
+    .page-header .doc-type { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; }
+      .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .step, .callout, thead tr { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      pre { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page-break { page-break-before: always; }
+      a { color: inherit; text-decoration: none; }
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    p { margin: 8px 0; }
+    ul, ol { padding-left: 20px; }
+    li { margin: 4px 0; font-size: 12px; }
+    h3 { font-size: 15px; color: #0f3460; margin: 20px 0 10px; }
+    h4 { font-size: 13px; color: #1a1a2e; margin: 14px 0 6px; }
+    .mt { margin-top: 20px; }
+    .tag {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1e40af;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tag.green { background: #e6f4ea; color: #166534; }
+    .tag.red { background: #fde8e8; color: #991b1b; }
+    .tag.yellow { background: #fef9e7; color: #92400e; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ COVER ═══ -->
+<div class="cover">
+  <div class="badge">Deployment Documentation</div>
+  <h1>Explore <span>Batam</span></h1>
+  <p class="subtitle">Panduan lengkap deploy aplikasi ke Vercel — dari setup environment hingga verifikasi production</p>
+  <div class="stack-pills">
+    <span class="pill">Next.js 14</span>
+    <span class="pill">TypeScript</span>
+    <span class="pill">PostgreSQL</span>
+    <span class="pill">NextAuth.js</span>
+    <span class="pill">Cloudinary</span>
+    <span class="pill">Vercel</span>
+    <span class="pill">Tailwind CSS</span>
+    <span class="pill">Leaflet Maps</span>
+  </div>
+  <div class="meta">
+    <div class="meta-item">
+      <div class="label">Versi Dokumen</div>
+      <div class="value">1.0.0</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Tanggal</div>
+      <div class="value">Maret 2026</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Target Platform</div>
+      <div class="value">Vercel + Neon</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Node.js</div>
+      <div class="value">&ge; 18.x</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 1 ═══ -->
+<div class="page">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- DAFTAR ISI -->
+  <div class="section">
+    <div class="section-title">Daftar Isi</div>
+    <table>
+      <thead><tr><th>#</th><th>Bagian</th><th>Halaman</th></tr></thead>
+      <tbody>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">1</td><td>Arsitektur & Tech Stack</td><td>2</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">2</td><td>Prasyarat</td><td>2</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">3</td><td>Struktur Project</td><td>3</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">4</td><td>File Konfigurasi Deploy</td><td>3</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">5</td><td>Langkah Deploy Step-by-Step</td><td>4</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">6</td><td>Environment Variables Lengkap</td><td>5</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">7</td><td>Setup Database Production</td><td>6</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">8</td><td>Verifikasi Post-Deploy</td><td>7</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">9</td><td>Troubleshooting</td><td>7</td></tr>
+        <tr><td style="font-family:inherit;color:inherit;font-weight:normal">10</td><td>Checklist Final</td><td>8</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ARSITEKTUR -->
+  <div class="section">
+    <div class="section-title"><span class="num">1</span> Arsitektur & Tech Stack</div>
+    <table>
+      <thead><tr><th>Layer</th><th>Teknologi</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr><td>Frontend</td><td>Next.js 14 (App Router)</td><td>SSR + CSR, TypeScript</td></tr>
+        <tr><td>Styling</td><td>Tailwind CSS + shadcn/ui</td><td>Komponen UI konsisten</td></tr>
+        <tr><td>Auth</td><td>NextAuth.js v5</td><td>Session-based, role admin/super_user</td></tr>
+        <tr><td>Database</td><td>PostgreSQL (Neon / Vercel Postgres)</td><td>Serverless, auto-scale</td></tr>
+        <tr><td>ORM/Query</td><td>node-postgres (pg)</td><td>Raw SQL, koneksi pooled</td></tr>
+        <tr><td>Media</td><td>Cloudinary</td><td>Upload & optimasi gambar</td></tr>
+        <tr><td>Maps</td><td>Leaflet + React-Leaflet</td><td>Dynamic import (no SSR)</td></tr>
+        <tr><td>Hosting</td><td>Vercel</td><td>Edge Network, auto-deploy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PRASYARAT -->
+  <div class="section">
+    <div class="section-title"><span class="num">2</span> Prasyarat</div>
+    <p>Pastikan semua akun dan tools berikut sudah siap sebelum memulai:</p>
+    <table class="mt">
+      <thead><tr><th>Prasyarat</th><th>Status</th><th>Catatan</th></tr></thead>
+      <tbody>
+        <tr><td>Akun GitHub</td><td><span class="tag green">Wajib</span></td><td>Untuk menyimpan source code</td></tr>
+        <tr><td>Akun Vercel</td><td><span class="tag green">Wajib</span></td><td>Gratis untuk hobby projects</td></tr>
+        <tr><td>Akun Neon / Vercel Postgres</td><td><span class="tag green">Wajib</span></td><td>Database PostgreSQL serverless</td></tr>
+        <tr><td>Akun Cloudinary</td><td><span class="tag green">Wajib</span></td><td>Untuk upload & hosting gambar</td></tr>
+        <tr><td>Node.js &ge; 18.x</td><td><span class="tag green">Wajib</span></td><td>Untuk build lokal sebelum push</td></tr>
+        <tr><td>Git</td><td><span class="tag green">Wajib</span></td><td>Version control</td></tr>
+        <tr><td>OpenSSL (atau PowerShell)</td><td><span class="tag yellow">Opsional</span></td><td>Generate NEXTAUTH_SECRET</td></tr>
+      </tbody>
+    </table>
+    <div class="callout info">
+      <span class="icon">ℹ️</span>
+      <div><strong>Generate NEXTAUTH_SECRET</strong>
+      Jalankan perintah ini di terminal untuk mendapatkan secret yang aman:<br>
+      <code>openssl rand -base64 32</code><br>
+      Atau di PowerShell: <code>[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 2 ═══ -->
+<div class="page page-break">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- STRUKTUR PROJECT -->
+  <div class="section">
+    <div class="section-title"><span class="num">3</span> Struktur Project</div>
+    <pre><code>explore-batam/
+├── app/                        <span class="comment"># Next.js App Router</span>
+│   ├── (public)/               <span class="comment"># Halaman publik (home, destinasi)</span>
+│   ├── admin/                  <span class="comment"># Dashboard admin (protected)</span>
+│   └── api/                    <span class="comment"># API Routes</span>
+│       ├── auth/[...nextauth]/  <span class="comment"># NextAuth handler</span>
+│       ├── places/             <span class="comment"># CRUD destinasi</span>
+│       ├── upload/             <span class="comment"># Cloudinary upload</span>
+│       └── users/              <span class="comment"># Manajemen user</span>
+├── components/                 <span class="comment"># React components</span>
+│   ├── ui/                     <span class="comment"># shadcn/ui base components</span>
+│   ├── Map.tsx                 <span class="comment"># Leaflet map (dynamic import)</span>
+│   └── ...
+├── lib/
+│   ├── db.ts                   <span class="comment"># PostgreSQL connection pool</span>
+│   ├── auth.ts                 <span class="comment"># NextAuth config</span>
+│   └── data.ts                 <span class="comment"># Data fetching helpers</span>
+├── database/
+│   ├── schema.sql              <span class="comment"># DDL — jalankan di production DB</span>
+│   └── seed.md                 <span class="comment"># Instruksi setup DB</span>
+├── public/                     <span class="comment"># Static assets</span>
+├── .env.production.example     <span class="comment"># Referensi env vars</span>
+├── vercel.json                 <span class="comment"># Konfigurasi Vercel</span>
+├── next.config.js              <span class="comment"># Next.js config (standalone output)</span>
+├── middleware.ts               <span class="comment"># Route protection</span>
+└── tailwind.config.ts</code></pre>
+  </div>
+
+  <!-- FILE KONFIGURASI -->
+  <div class="section">
+    <div class="section-title"><span class="num">4</span> File Konfigurasi Deploy</div>
+
+    <h3>4.1 vercel.json</h3>
+    <p>File ini memberitahu Vercel cara build project:</p>
+    <pre><code>{
+  <span class="string">"buildCommand"</span>: <span class="string">"next build"</span>,
+  <span class="string">"outputDirectory"</span>: <span class="string">".next"</span>,
+  <span class="string">"installCommand"</span>: <span class="string">"npm install"</span>
+}</code></pre>
+
+    <h3>4.2 next.config.js (sudah ada — tidak perlu diubah)</h3>
+    <p>Konfigurasi Next.js yang relevan untuk production:</p>
+    <pre><code><span class="keyword">const</span> nextConfig = {
+  output: <span class="string">'standalone'</span>,         <span class="comment">// Optimasi bundle size</span>
+  images: {
+    remotePatterns: [
+      { protocol: <span class="string">'https'</span>, hostname: <span class="string">'res.cloudinary.com'</span> },
+      <span class="comment">// ... domain lain</span>
+    ]
+  }
+}</code></pre>
+
+    <h3>4.3 middleware.ts (sudah ada — tidak perlu diubah)</h3>
+    <p>Melindungi semua route <code>/admin/*</code> dari akses tanpa autentikasi.</p>
+
+    <div class="callout success">
+      <span class="icon">✅</span>
+      <div><strong>Tidak ada perubahan kode yang diperlukan</strong>
+      Semua file konfigurasi sudah production-ready. Hanya perlu setup environment variables di Vercel Dashboard.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 3 ═══ -->
+<div class="page page-break">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- LANGKAH DEPLOY -->
+  <div class="section">
+    <div class="section-title"><span class="num">5</span> Langkah Deploy Step-by-Step</div>
+
+    <h3>5.1 Push ke GitHub</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Inisialisasi Git repository</h4>
+          <pre><code>git init
+git add .
+git commit -m <span class="string">"initial commit: Explore Batam app"</span></code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Buat repository di GitHub dan push</h4>
+          <pre><code>git remote add origin https://github.com/USERNAME/explore-batam.git
+git branch -M main
+git push -u origin main</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Pastikan file sensitif tidak ikut ter-commit</strong>
+      File <code>.env</code>, <code>.env.local</code>, dan <code>node_modules/</code> sudah ada di <code>.gitignore</code>. Jangan pernah commit nilai API key atau password asli.</div>
+    </div>
+
+    <h3>5.2 Import ke Vercel</h3>
+    <div class="steps">
+      <div class="step accent">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Buka Vercel dan import project</h4>
+          <p>Masuk ke <strong>vercel.com</strong> → klik <strong>Add New... → Project</strong> → pilih repository <code>explore-batam</code> dari GitHub.</p>
+        </div>
+      </div>
+      <div class="step accent">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Konfigurasi build settings</h4>
+          <p>Vercel akan auto-detect Next.js. Pastikan:</p>
+          <ul>
+            <li>Framework: <strong>Next.js</strong></li>
+            <li>Build Command: <code>next build</code></li>
+            <li>Output Directory: <code>.next</code></li>
+            <li>Node.js Version: <strong>18.x atau 20.x</strong></li>
+          </ul>
+        </div>
+      </div>
+      <div class="step accent">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Isi Environment Variables</h4>
+          <p>Sebelum klik Deploy, isi semua variabel di bagian <strong>Environment Variables</strong>. Lihat daftar lengkap di Bagian 6.</p>
+        </div>
+      </div>
+      <div class="step accent">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>Klik Deploy</h4>
+          <p>Vercel akan mulai build. Proses ini memakan waktu 1–3 menit. Pantau log di tab <strong>Deployments</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>5.3 Update NEXTAUTH_URL</h3>
+    <p>Setelah deploy pertama selesai dan mendapatkan URL Vercel (misal: <code>explore-batam.vercel.app</code>):</p>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-content">
+        <h4>Update NEXTAUTH_URL di Vercel Dashboard</h4>
+        <p>Pergi ke <strong>Settings → Environment Variables</strong>, update nilai <code>NEXTAUTH_URL</code> dan <code>NEXT_PUBLIC_APP_URL</code> dengan URL asli yang diberikan Vercel, lalu <strong>Redeploy</strong>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 4 ═══ -->
+<div class="page page-break">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- ENV VARS -->
+  <div class="section">
+    <div class="section-title"><span class="num">6</span> Environment Variables Lengkap</div>
+    <p>Isi semua variabel berikut di <strong>Vercel Dashboard → Settings → Environment Variables</strong>. Pilih environment: <strong>Production</strong>, <strong>Preview</strong>, dan <strong>Development</strong>.</p>
+
+    <h3>6.1 Database</h3>
+    <table>
+      <thead><tr><th>Variabel</th><th>Nilai / Format</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>POSTGRES_URL</td>
+          <td style="font-family:monospace;font-size:10px;color:#333">postgres://user:pass@host/db?sslmode=require</td>
+          <td>Koneksi utama (pooled)</td>
+        </tr>
+        <tr>
+          <td>POSTGRES_PRISMA_URL</td>
+          <td style="font-family:monospace;font-size:10px;color:#333">...?pgbouncer=true&connect_timeout=15</td>
+          <td>Dengan pgbouncer untuk runtime</td>
+        </tr>
+        <tr>
+          <td>POSTGRES_URL_NON_POOLING</td>
+          <td style="font-family:monospace;font-size:10px;color:#333">postgres://user:pass@host/db?sslmode=require</td>
+          <td>Tanpa pooling, untuk migrations</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>6.2 NextAuth</h3>
+    <table>
+      <thead><tr><th>Variabel</th><th>Contoh Nilai</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>NEXTAUTH_URL</td>
+          <td>https://explore-batam.vercel.app</td>
+          <td>URL produksi lengkap</td>
+        </tr>
+        <tr>
+          <td>NEXTAUTH_SECRET</td>
+          <td>xK2mP9...&lt;32 byte base64&gt;</td>
+          <td>Generate: <code>openssl rand -base64 32</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>6.3 Cloudinary</h3>
+    <table>
+      <thead><tr><th>Variabel</th><th>Dari</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</td>
+          <td>Cloudinary Dashboard</td>
+          <td>Cloud name akun kamu</td>
+        </tr>
+        <tr>
+          <td>CLOUDINARY_API_KEY</td>
+          <td>Settings → API Keys</td>
+          <td>API key (public)</td>
+        </tr>
+        <tr>
+          <td>CLOUDINARY_API_SECRET</td>
+          <td>Settings → API Keys</td>
+          <td>API secret (jaga kerahasiaannya!)</td>
+        </tr>
+        <tr>
+          <td>CLOUDINARY_UPLOAD_PRESET</td>
+          <td>Settings → Upload Presets</td>
+          <td>Nama preset upload yang dibuat</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>6.4 App URL</h3>
+    <table>
+      <thead><tr><th>Variabel</th><th>Contoh Nilai</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>NEXT_PUBLIC_APP_URL</td>
+          <td>https://explore-batam.vercel.app</td>
+          <td>URL publik app (sama dengan NEXTAUTH_URL)</td>
+        </tr>
+        <tr>
+          <td>NEXT_PUBLIC_API_URL</td>
+          <td>https://explore-batam.vercel.app/api</td>
+          <td>Base URL untuk API calls dari client</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout danger">
+      <span class="icon">🔒</span>
+      <div><strong>Keamanan: Variabel Sensitif</strong>
+      <code>CLOUDINARY_API_SECRET</code>, <code>NEXTAUTH_SECRET</code>, dan semua <code>POSTGRES_*</code> URL bersifat rahasia. Jangan pernah expose ke client-side atau commit ke repository. Variabel yang diawali <code>NEXT_PUBLIC_</code> akan terekspos ke browser — pastikan isinya aman untuk dipublikasi.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 5 ═══ -->
+<div class="page page-break">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- SETUP DATABASE -->
+  <div class="section">
+    <div class="section-title"><span class="num">7</span> Setup Database Production</div>
+
+    <h3>7.1 Buat Database di Neon</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Buka neon.tech dan buat project baru</h4>
+          <p>Pilih region terdekat (Singapore jika tersedia) dan beri nama database, misal: <code>explore-batam-prod</code>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Salin connection strings</h4>
+          <p>Di Neon Dashboard → <strong>Connection Details</strong>, salin tiga format URL (pooled, Prisma, non-pooling) ke Vercel Environment Variables.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>7.2 Jalankan Schema SQL</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Buka SQL Editor di Neon</h4>
+          <p>Neon Dashboard → <strong>SQL Editor</strong> → New Query.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Jalankan file schema.sql</h4>
+          <p>Copy seluruh isi file <code>database/schema.sql</code> dari repository, paste ke SQL Editor, lalu klik <strong>Run</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>7.3 Verifikasi Tabel</h3>
+    <p>Jalankan query ini untuk memastikan semua tabel berhasil dibuat:</p>
+    <pre><code><span class="keyword">SELECT</span> table_name, <span class="keyword">column_count</span>
+<span class="keyword">FROM</span> (
+  <span class="keyword">SELECT</span>
+    t.table_name,
+    COUNT(c.column_name) <span class="keyword">AS</span> column_count
+  <span class="keyword">FROM</span> information_schema.tables t
+  <span class="keyword">JOIN</span> information_schema.columns c
+    <span class="keyword">ON</span> t.table_name = c.table_name
+  <span class="keyword">WHERE</span> t.table_schema = <span class="string">'public'</span>
+    <span class="keyword">AND</span> t.table_type = <span class="string">'BASE TABLE'</span>
+  <span class="keyword">GROUP BY</span> t.table_name
+) <span class="keyword">ORDER BY</span> table_name;</code></pre>
+
+    <p>Tabel yang diharapkan muncul: <code>users</code>, <code>places</code>, <code>reviews</code> (sesuai schema.sql)</p>
+
+    <h3>7.4 Buat Admin User</h3>
+    <pre><code><span class="comment">-- Hash password menggunakan bcrypt cost 10</span>
+<span class="comment">-- Generate hash di: https://bcrypt-generator.com/ (rounds: 10)</span>
+<span class="keyword">INSERT INTO</span> users (name, email, password_hash, role, status)
+<span class="keyword">VALUES</span> (
+  <span class="string">'Admin'</span>,
+  <span class="string">'admin@explorebatam.com'</span>,
+  <span class="string">'$2a$10$GANTI_DENGAN_HASH_BCRYPT_ASLI'</span>,
+  <span class="string">'super_user'</span>,
+  <span class="string">'active'</span>
+);</code></pre>
+
+    <div class="callout warn">
+      <span class="icon">⚠️</span>
+      <div><strong>Jangan gunakan plain-text password</strong>
+      Selalu gunakan bcrypt hash. Ganti <code>$2a$10$GANTI_DENGAN_HASH_BCRYPT_ASLI</code> dengan hash yang di-generate dari password admin kamu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 6 ═══ -->
+<div class="page page-break">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- VERIFIKASI -->
+  <div class="section">
+    <div class="section-title"><span class="num">8</span> Verifikasi Post-Deploy</div>
+    <p>Setelah deploy selesai, lakukan pengujian berikut secara berurutan:</p>
+
+    <div class="verify-grid">
+      <div class="verify-card">
+        <div class="url">/</div>
+        <div class="desc">Homepage dengan daftar destinasi dan peta Leaflet</div>
+        <div class="status">✓ Harusnya load tanpa error</div>
+      </div>
+      <div class="verify-card">
+        <div class="url">/admin/login</div>
+        <div class="desc">Halaman login admin</div>
+        <div class="status">✓ Form login tampil dengan benar</div>
+      </div>
+      <div class="verify-card">
+        <div class="url">/admin/dashboard</div>
+        <div class="desc">Dashboard setelah login berhasil</div>
+        <div class="status">✓ Redirect ke login jika belum auth</div>
+      </div>
+      <div class="verify-card">
+        <div class="url">/admin/places</div>
+        <div class="desc">Manajemen destinasi wisata</div>
+        <div class="status">✓ Data tampil dari database</div>
+      </div>
+    </div>
+
+    <h3>Pengujian Fungsional</h3>
+    <table>
+      <thead><tr><th>Fitur</th><th>Cara Test</th><th>Expected Result</th></tr></thead>
+      <tbody>
+        <tr><td>Login Admin</td><td>Login di /admin/login</td><td>Redirect ke /admin/dashboard</td></tr>
+        <tr><td>Peta Leaflet</td><td>Buka homepage</td><td>Peta interaktif tampil dengan marker</td></tr>
+        <tr><td>Upload Gambar</td><td>Upload di form tambah destinasi</td><td>Gambar tersimpan di Cloudinary</td></tr>
+        <tr><td>CRUD Destinasi</td><td>Tambah, edit, hapus destinasi</td><td>Data tersimpan di database</td></tr>
+        <tr><td>API Response</td><td>Buka /api/places</td><td>JSON array destinasi</td></tr>
+        <tr><td>Middleware Auth</td><td>Akses /admin tanpa login</td><td>Redirect ke /admin/login</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TROUBLESHOOTING -->
+  <div class="section">
+    <div class="section-title"><span class="num">9</span> Troubleshooting</div>
+
+    <h3>Error Umum dan Solusi</h3>
+    <table>
+      <thead><tr><th>Error</th><th>Penyebab</th><th>Solusi</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>500 Internal Server Error</td>
+          <td>Env vars tidak lengkap atau salah format</td>
+          <td>Cek Vercel Logs → Functions, pastikan semua POSTGRES_* terisi</td>
+        </tr>
+        <tr>
+          <td>Build failed: Module not found</td>
+          <td>Dependency hilang</td>
+          <td>Jalankan <code>npm install</code> lokal, pastikan package.json lengkap</td>
+        </tr>
+        <tr>
+          <td>NEXTAUTH_URL mismatch</td>
+          <td>URL tidak sesuai domain Vercel</td>
+          <td>Update NEXTAUTH_URL di Vercel → Redeploy</td>
+        </tr>
+        <tr>
+          <td>Gambar tidak muncul</td>
+          <td>Domain Cloudinary belum di-whitelist</td>
+          <td>Tambahkan <code>res.cloudinary.com</code> ke next.config.js images.remotePatterns</td>
+        </tr>
+        <tr>
+          <td>Peta tidak tampil</td>
+          <td>Leaflet SSR error</td>
+          <td>Pastikan komponen Map menggunakan <code>dynamic import</code> dengan <code>ssr: false</code></td>
+        </tr>
+        <tr>
+          <td>Database connection error</td>
+          <td>SSL atau pooling issue</td>
+          <td>Pastikan POSTGRES_URL mengandung <code>?sslmode=require</code></td>
+        </tr>
+        <tr>
+          <td>Upload gambar gagal</td>
+          <td>Cloudinary preset salah atau API secret keliru</td>
+          <td>Verifikasi CLOUDINARY_UPLOAD_PRESET adalah unsigned preset</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Cara Cek Logs di Vercel</h3>
+    <div class="step">
+      <div class="step-num">!</div>
+      <div class="step-content">
+        <h4>Vercel Dashboard → Project → Deployments → [Latest] → Functions</h4>
+        <p>Semua error server-side (API routes, SSR) akan muncul di sini secara real-time.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════ HALAMAN 7 ═══ -->
+<div class="page page-break">
+  <div class="page-header">
+    <span class="brand">Explore Batam</span>
+    <span class="doc-type">Panduan Deploy ke Vercel</span>
+  </div>
+
+  <!-- CHECKLIST FINAL -->
+  <div class="section">
+    <div class="section-title"><span class="num">10</span> Checklist Final</div>
+    <p>Gunakan checklist ini sebelum mengumumkan aplikasi live:</p>
+
+    <h3>Persiapan</h3>
+    <ul class="checklist">
+      <li>Source code sudah di-push ke GitHub repository</li>
+      <li>File <code>.env</code> dan <code>node_modules</code> tidak ikut ter-commit (ada di .gitignore)</li>
+      <li>Build lokal berhasil: <code>npm run build</code> tanpa error</li>
+      <li>Akun Neon / Vercel Postgres sudah dibuat</li>
+      <li>Akun Cloudinary sudah siap dan upload preset sudah dibuat</li>
+      <li>NEXTAUTH_SECRET sudah di-generate (32 byte base64)</li>
+    </ul>
+
+    <h3>Deploy</h3>
+    <ul class="checklist">
+      <li>Project sudah di-import ke Vercel dari GitHub</li>
+      <li>Semua 11 environment variables sudah diisi</li>
+      <li>Build Vercel berhasil tanpa error</li>
+      <li>NEXTAUTH_URL sudah diupdate dengan URL Vercel asli</li>
+      <li>Redeploy dilakukan setelah update NEXTAUTH_URL</li>
+    </ul>
+
+    <h3>Database</h3>
+    <ul class="checklist">
+      <li>Schema SQL sudah dijalankan di production database</li>
+      <li>Semua tabel berhasil dibuat dan terverifikasi</li>
+      <li>Admin user sudah dibuat dengan bcrypt hash</li>
+      <li>Koneksi database berhasil dari aplikasi production</li>
+    </ul>
+
+    <h3>Verifikasi Fungsional</h3>
+    <ul class="checklist">
+      <li>Homepage load dengan benar dan peta Leaflet tampil</li>
+      <li>Login admin berhasil di <code>/admin/login</code></li>
+      <li>Akses <code>/admin</code> tanpa login di-redirect ke halaman login</li>
+      <li>Upload gambar berhasil disimpan di Cloudinary</li>
+      <li>CRUD destinasi berfungsi (tambah, edit, hapus)</li>
+      <li>API endpoint <code>/api/places</code> mengembalikan data JSON yang benar</li>
+    </ul>
+
+    <div class="callout success">
+      <span class="icon">🚀</span>
+      <div><strong>Aplikasi siap launch!</strong>
+      Setelah semua checklist di atas terpenuhi, Explore Batam sudah live dan siap diakses oleh pengguna. Bagikan URL Vercel kamu dan mulai explore!</div>
+    </div>
+  </div>
+
+  <!-- FOOTER INFO -->
+  <div style="margin-top:48px;padding-top:24px;border-top:2px solid #e5e9f0;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:14px;font-weight:700;color:#0f3460;">Explore Batam</div>
+      <div style="font-size:11px;color:#999;margin-top:2px;">Panduan Deploy ke Vercel — Versi 1.0.0</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;color:#999;">Dibuat: Maret 2026</div>
+      <div style="font-size:11px;color:#999;margin-top:2px;">Next.js 14 · Vercel · PostgreSQL</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
