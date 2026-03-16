@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/next-auth';
 import SessionProvider from '@/components/providers/SessionProvider';
 import { Toaster } from 'react-hot-toast';
 import CookieBanner from '@/components/CookieBanner';
+import WelcomeBanner from '@/components/WelcomeBanner';
 
 export const metadata: Metadata = {
   title: 'Singgah Sekejap - Panduan Wisata & Kuliner Batam',
@@ -50,6 +51,7 @@ export default async function RootLayout({
             {children}
           </div>
           <Toaster position="top-right" />
+          <WelcomeBanner />
           <CookieBanner />
         </SessionProvider>
       </body>
