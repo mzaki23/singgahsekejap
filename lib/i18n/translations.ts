@@ -16,7 +16,7 @@ export const translations = {
       footerCategories: '📁 KATEGORI',
     },
     jelajah: {
-      title: 'Jelajah Batam! 🗺️',
+      title: 'Menelusuri Batam! 🗺️',
       subtitle: 'Pilih kategori dan temukan tempat favoritmu',
       backHome: '← Kembali ke Home',
       placesCount: (n: number) => `${n} tempat →`,
