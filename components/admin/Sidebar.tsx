@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, MapPin, MessageSquare, Users,
-  BarChart3, Settings, LogOut, ChevronLeft, ChevronRight, X, Flag
+  BarChart3, Settings, LogOut, ChevronLeft, ChevronRight, X, Flag, Trash2
 } from 'lucide-react';
 
 interface NavItem {
@@ -13,6 +14,7 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   requireSuperUser?: boolean;
+  badge?: number;
 }
 
 interface Props {
@@ -26,12 +28,22 @@ export default function AdminSidebar({ collapsed, onToggle, isMobileDrawer, onCl
   const pathname = usePathname();
   const { data: session } = useSession();
   const isSuperUser = session?.user?.role === 'super_user';
+  const [deleteRequestCount, setDeleteRequestCount] = useState(0);
+
+  useEffect(() => {
+    if (!isSuperUser) return;
+    fetch('/api/delete-requests/count')
+      .then(r => r.json())
+      .then(d => setDeleteRequestCount(d.count ?? 0))
+      .catch(() => {});
+  }, [isSuperUser, pathname]);
 
   const navItems: NavItem[] = [
     { title: 'Dashboard',  href: '/admin/dashboard',  icon: <LayoutDashboard size={20} /> },
     { title: 'Places',     href: '/admin/places',     icon: <MapPin size={20} /> },
     { title: 'Reviews',    href: '/admin/reviews',    icon: <MessageSquare size={20} /> },
     { title: 'Reports',    href: '/admin/reports',    icon: <Flag size={20} /> },
+    { title: 'Perm. Hapus', href: '/admin/delete-requests', icon: <Trash2 size={20} />, requireSuperUser: true, badge: deleteRequestCount },
     { title: 'Users',      href: '/admin/users',      icon: <Users size={20} />, requireSuperUser: true },
     { title: 'Analytics',  href: '/admin/analytics',  icon: <BarChart3 size={20} /> },
     { title: 'Settings',   href: '/admin/settings',   icon: <Settings size={20} />, requireSuperUser: true },
@@ -83,7 +95,16 @@ export default function AdminSidebar({ collapsed, onToggle, isMobileDrawer, onCl
               title={!show && !isMobileDrawer ? item.title : undefined}
             >
               <span className="flex-shrink-0">{item.icon}</span>
-              {(show || isMobileDrawer) && <span>{item.title}</span>}
+              {(show || isMobileDrawer) && (
+                <span className="flex items-center gap-2 flex-1">
+                  {item.title}
+                  {item.badge != null && item.badge > 0 && (
+                    <span className="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-bold bg-red-500 text-white rounded-full">
+                      {item.badge > 9 ? '9+' : item.badge}
+                    </span>
+                  )}
+                </span>
+              )}
             </Link>
           );
         })}

@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { queries } from '@/lib/db';
+import { rateLimit, getClientIp } from '@/lib/ratelimit';
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const { allowed } = rateLimit(`${ip}:reviews`, 5, 60 * 60 * 1000); // 5 per jam
+  if (!allowed) {
+    return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi nanti.' }, { status: 429 });
+  }
+
   try {
     const { place_id, user_name, user_email, rating, comment } = await req.json();
 

@@ -17,7 +17,7 @@ export default async function SettingsPage() {
         <p className="text-gray-500 mt-1">Kelola profil dan keamanan akun</p>
       </div>
 
-      <SettingsForm user={session?.user} />
+      <SettingsForm user={session!.user} />
     </div>
   );
 }

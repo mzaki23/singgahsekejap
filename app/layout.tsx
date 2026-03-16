@@ -6,6 +6,7 @@ import SessionProvider from '@/components/providers/SessionProvider';
 import { Toaster } from 'react-hot-toast';
 import CookieBanner from '@/components/CookieBanner';
 import WelcomeBanner from '@/components/WelcomeBanner';
+import BackToTop from '@/components/BackToTop';
 
 export const metadata: Metadata = {
   title: 'Singgah Sekejap - Panduan Wisata & Kuliner Batam',
@@ -53,6 +54,7 @@ export default async function RootLayout({
           <Toaster position="top-right" />
           <WelcomeBanner />
           <CookieBanner />
+          <BackToTop />
         </SessionProvider>
       </body>
     </html>

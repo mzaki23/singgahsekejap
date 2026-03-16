@@ -118,27 +118,31 @@ export const queries = {
   // ==================== PLACES ====================
   places: {
     getAll: async (filters?: { category?: string; status?: string; search?: string }) => {
-      let query = 'SELECT * FROM places WHERE 1=1';
+      let query = `
+        SELECT p.*, u.name as created_by_name
+        FROM places p
+        LEFT JOIN users u ON u.id = p.created_by
+        WHERE 1=1`;
       const params: any[] = [];
       let i = 1;
 
       if (filters?.category) {
-        query += ` AND category = $${i}`;
+        query += ` AND p.category = $${i}`;
         params.push(filters.category);
         i++;
       }
       if (filters?.status) {
-        query += ` AND status = $${i}`;
+        query += ` AND p.status = $${i}`;
         params.push(filters.status);
         i++;
       }
       if (filters?.search) {
-        query += ` AND (name ILIKE $${i} OR location ILIKE $${i})`;
+        query += ` AND (p.name ILIKE $${i} OR p.location ILIKE $${i})`;
         params.push(`%${filters.search}%`);
         i++;
       }
 
-      query += ' ORDER BY created_at DESC';
+      query += ' ORDER BY p.rating DESC NULLS LAST';
       return db.queryAll(query, params);
     },
 
@@ -316,12 +320,14 @@ export const queries = {
     },
 
     getRecentEvents: async (days: number = 7) => {
+      const safeDays = Math.max(1, Math.min(365, Math.floor(Number(days))));
       return db.queryAll(
         `SELECT DATE(created_at) as date, event_type, COUNT(*) as count
          FROM analytics
-         WHERE created_at >= NOW() - INTERVAL '${days} days'
+         WHERE created_at >= NOW() - ($1 || ' days')::INTERVAL
          GROUP BY DATE(created_at), event_type
-         ORDER BY date ASC`
+         ORDER BY date ASC`,
+        [safeDays]
       );
     }
   },
@@ -389,6 +395,144 @@ export const queries = {
       const row = await db.queryOne(`SELECT COUNT(*) as count FROM reports WHERE status = 'pending'`);
       return Number(row?.count ?? 0);
     }
+  },
+
+  // ==================== DELETE REQUESTS ====================
+  deleteRequests: {
+    ensureTable: async () => {
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS delete_requests (
+          id SERIAL PRIMARY KEY,
+          place_id INTEGER NOT NULL,
+          place_name TEXT NOT NULL,
+          place_category TEXT NOT NULL,
+          requested_by INTEGER REFERENCES users(id),
+          requested_by_name TEXT NOT NULL,
+          reason TEXT,
+          status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+          reviewed_by INTEGER REFERENCES users(id),
+          reviewed_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    },
+
+    create: async (data: {
+      place_id: number;
+      place_name: string;
+      place_category: string;
+      requested_by: number;
+      requested_by_name: string;
+      reason?: string;
+    }) => {
+      await queries.deleteRequests.ensureTable();
+      return db.queryOne(
+        `INSERT INTO delete_requests (place_id, place_name, place_category, requested_by, requested_by_name, reason)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [data.place_id, data.place_name, data.place_category, data.requested_by, data.requested_by_name, data.reason || null]
+      );
+    },
+
+    getAll: async (filters?: { status?: string }) => {
+      await queries.deleteRequests.ensureTable();
+      let query = `
+        SELECT dr.*, u.name as reviewer_name
+        FROM delete_requests dr
+        LEFT JOIN users u ON u.id = dr.reviewed_by
+        WHERE 1=1
+      `;
+      const params: any[] = [];
+      let i = 1;
+      if (filters?.status) {
+        query += ` AND dr.status = $${i}`;
+        params.push(filters.status);
+        i++;
+      }
+      query += ' ORDER BY dr.created_at DESC';
+      return db.queryAll(query, params);
+    },
+
+    getById: async (id: number) => {
+      await queries.deleteRequests.ensureTable();
+      return db.queryOne('SELECT * FROM delete_requests WHERE id = $1', [id]);
+    },
+
+    updateStatus: async (id: number, status: string, reviewed_by: number) => {
+      return db.queryOne(
+        `UPDATE delete_requests SET status = $1, reviewed_by = $2, reviewed_at = NOW()
+         WHERE id = $3 RETURNING *`,
+        [status, reviewed_by, id]
+      );
+    },
+
+    getPendingCount: async () => {
+      try {
+        const row = await db.queryOne(`SELECT COUNT(*) as count FROM delete_requests WHERE status = 'pending'`);
+        return Number(row?.count ?? 0);
+      } catch { return 0; }
+    },
+
+    existsForPlace: async (place_id: number) => {
+      try {
+        const row = await db.queryOne(
+          `SELECT id FROM delete_requests WHERE place_id = $1 AND status = 'pending'`,
+          [place_id]
+        );
+        return !!row;
+      } catch { return false; }
+    },
+  },
+
+  // ==================== NOTIFICATIONS ====================
+  notifications: {
+    ensureTable: async () => {
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS notifications (
+          id SERIAL PRIMARY KEY,
+          type TEXT NOT NULL,
+          title TEXT NOT NULL,
+          message TEXT,
+          link TEXT,
+          is_read BOOLEAN DEFAULT false,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    },
+
+    create: async (data: { type: string; title: string; message?: string; link?: string }) => {
+      await queries.notifications.ensureTable();
+      return db.queryOne(
+        `INSERT INTO notifications (type, title, message, link)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [data.type, data.title, data.message || null, data.link || null]
+      );
+    },
+
+    getAll: async () => {
+      await queries.notifications.ensureTable();
+      return db.queryAll(
+        `SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50`
+      );
+    },
+
+    getUnreadCount: async () => {
+      try {
+        const row = await db.queryOne(
+          `SELECT COUNT(*) as count FROM notifications WHERE is_read = false`
+        );
+        return Number(row?.count ?? 0);
+      } catch { return 0; }
+    },
+
+    markRead: async (id: number) => {
+      return db.execute(
+        `UPDATE notifications SET is_read = true WHERE id = $1`, [id]
+      );
+    },
+
+    markAllRead: async () => {
+      return db.execute(`UPDATE notifications SET is_read = true WHERE is_read = false`);
+    },
   },
 
   // ==================== AUDIT LOGS ====================

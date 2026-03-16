@@ -1,6 +1,6 @@
 export const translations = {
   id: {
-    nav: { home: 'Beranda', explore: 'Jelajah', login: 'Masuk' },
+    nav: { home: 'Beranda', explore: 'Jelajah', login: 'Contributor' },
     hero: {
       tagline: 'Cari tempat seru, cafe kece & pantai cakep! 🌴',
       placeholder: 'Ketik nama tempat atau area...',
@@ -49,7 +49,7 @@ export const translations = {
     },
   },
   en: {
-    nav: { home: 'Home', explore: 'Explore', login: 'Login' },
+    nav: { home: 'Home', explore: 'Explore', login: 'Contributor' },
     hero: {
       tagline: 'Find cool spots, trendy cafes & beautiful beaches! 🌴',
       placeholder: 'Type a place name or area...',

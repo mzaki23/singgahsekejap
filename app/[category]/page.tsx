@@ -4,6 +4,7 @@ import { queries } from '@/lib/db';
 import { CATEGORY_CONFIG } from '@/lib/data';
 import DistanceBadge from '@/components/DistanceBadge';
 import { getLang, translations } from '@/lib/i18n/server';
+import CategorySearchBar from '@/components/CategorySearchBar';
 
 interface Props {
   params: { category: string };
@@ -46,6 +47,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <p className="font-cute text-lg text-black/70 mt-2">{config.subtitle}</p>
         </div>
       </section>
+
+      <CategorySearchBar category={params.category} initialSearch={searchParams.search} />
 
       {/* Filter Tabs */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b-4 border-black">

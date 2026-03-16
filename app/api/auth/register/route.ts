@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { queries, db } from '@/lib/db';
+import { queries } from '@/lib/db';
 import { hashPassword, validatePassword } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/ratelimit';
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const { allowed } = rateLimit(`${ip}:register`, 5, 60 * 60 * 1000); // 5 per jam
+  if (!allowed) {
+    return NextResponse.json({ error: 'Terlalu banyak percobaan. Coba lagi nanti.' }, { status: 429 });
+  }
+
   try {
     const { name, email, password, confirmPassword, social_media = {} } = await req.json();
 
@@ -25,11 +32,11 @@ export async function POST(req: NextRequest) {
     }
 
     const password_hash = await hashPassword(password);
-    await db.queryOne(
-      `INSERT INTO users (name, email, password_hash, role, status, social_media)
-       VALUES ($1, $2, $3, 'admin', 'inactive', $4) RETURNING id`,
-      [name, email, password_hash, JSON.stringify(social_media)]
-    );
+    const newUser = await queries.users.create({ name, email, password_hash, role: 'admin' });
+    if (!newUser) throw new Error('Gagal membuat akun');
+
+    // Set status inactive setelah insert (kolom opsional di schema)
+    await queries.users.update(newUser.id, { status: 'inactive' }).catch(() => {});
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {

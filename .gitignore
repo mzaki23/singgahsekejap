@@ -44,3 +44,9 @@ generate_ppt.py
 explore-batam-pitch.pptx
 *.pptx
 .vercel
+
+# screenshots & screen recordings
+/screenshots/
+
+# utility scripts
+/scripts/

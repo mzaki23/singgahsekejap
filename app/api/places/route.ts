@@ -17,12 +17,28 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const VALID_CATEGORIES = ['makanan', 'pantai', 'taman', 'shopping', 'wisata'];
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
+
+    // Required field validation
+    if (!body.name?.trim()) return NextResponse.json({ error: 'Nama wajib diisi' }, { status: 400 });
+    if (!body.location?.trim()) return NextResponse.json({ error: 'Lokasi wajib diisi' }, { status: 400 });
+    if (!VALID_CATEGORIES.includes(body.category)) return NextResponse.json({ error: 'Kategori tidak valid' }, { status: 400 });
+    if (body.name.length > 200) return NextResponse.json({ error: 'Nama terlalu panjang' }, { status: 400 });
+    if (body.short_description?.length > 500) return NextResponse.json({ error: 'Deskripsi singkat terlalu panjang' }, { status: 400 });
+    if (body.latitude != null && (isNaN(Number(body.latitude)) || Number(body.latitude) < -90 || Number(body.latitude) > 90)) {
+      return NextResponse.json({ error: 'Latitude tidak valid' }, { status: 400 });
+    }
+    if (body.longitude != null && (isNaN(Number(body.longitude)) || Number(body.longitude) < -180 || Number(body.longitude) > 180)) {
+      return NextResponse.json({ error: 'Longitude tidak valid' }, { status: 400 });
+    }
+
     const place = await queries.places.create(body);
 
     await queries.audit.log({
@@ -32,6 +48,15 @@ export async function POST(req: NextRequest) {
       resource_id: place.id,
       new_data: place,
     });
+
+    if (session.user.role !== 'super_user') {
+      await queries.notifications.create({
+        type: 'place_created',
+        title: 'Place Baru Ditambahkan',
+        message: `${session.user.name ?? 'Admin'} menambahkan place baru: "${place.name}" (${place.category})`,
+        link: `/admin/places/${place.id}/edit`,
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ success: true, data: place }, { status: 201 });
   } catch (error) {

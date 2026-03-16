@@ -57,9 +57,60 @@ function SortableHeader({ label, field, sortKey, sortDir, onSort }: {
   );
 }
 
-export default function PlacesTable({ places }: { places: any[] }) {
+// Modal for admin delete request
+function DeleteRequestModal({ place, onClose, onSubmit }: {
+  place: { id: number; name: string };
+  onClose: () => void;
+  onSubmit: (reason: string) => Promise<void>;
+}) {
+  const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit() {
+    setSubmitting(true);
+    await onSubmit(reason);
+    setSubmitting(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-md">
+        <div className="p-5 border-b border-gray-100">
+          <h3 className="font-semibold text-gray-900">Ajukan Permintaan Hapus</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Permintaan untuk menghapus <strong>{place.name}</strong> akan dikirim ke super admin untuk disetujui.
+          </p>
+        </div>
+        <div className="p-5 space-y-3">
+          <label className="block text-sm font-medium text-gray-700">Alasan (opsional)</label>
+          <textarea
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            placeholder="Tuliskan alasan penghapusan..."
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none resize-none"
+          />
+        </div>
+        <div className="p-5 pt-0 flex gap-2 justify-end">
+          <button onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg transition-all">
+            Batal
+          </button>
+          <button onClick={handleSubmit} disabled={submitting}
+            className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all disabled:opacity-50">
+            {submitting ? 'Mengirim...' : 'Kirim Permintaan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PlacesTable({ places, role }: { places: any[]; role?: string }) {
   const router = useRouter();
+  const isSuperUser = role === 'super_user';
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [requestModal, setRequestModal] = useState<{ id: number; name: string } | null>(null);
 
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -92,15 +143,44 @@ export default function PlacesTable({ places }: { places: any[] }) {
   const [saving, setSaving] = useState(false);
 
   const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`Hapus "${name}"?`)) return;
-    setDeleting(id);
+    if (isSuperUser) {
+      if (!confirm(`Hapus "${name}"?`)) return;
+      setDeleting(id);
+      try {
+        const res = await fetch(`/api/places/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        toast.success('Place dihapus');
+        router.refresh();
+      } catch {
+        toast.error('Gagal menghapus place');
+      } finally {
+        setDeleting(null);
+      }
+    } else {
+      setRequestModal({ id, name });
+    }
+  };
+
+  const handleSubmitDeleteRequest = async (reason: string) => {
+    if (!requestModal) return;
+    setDeleting(requestModal.id);
     try {
-      const res = await fetch(`/api/places/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
-      toast.success('Place dihapus');
-      router.refresh();
-    } catch {
-      toast.error('Gagal menghapus place');
+      const res = await fetch(`/api/places/${requestModal.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal');
+      if (data.pending) {
+        toast.success('Permintaan hapus telah dikirim ke super admin');
+      } else {
+        toast.success('Place dihapus');
+        router.refresh();
+      }
+      setRequestModal(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Gagal mengirim permintaan');
     } finally {
       setDeleting(null);
     }
@@ -225,6 +305,13 @@ export default function PlacesTable({ places }: { places: any[] }) {
 
   return (
     <>
+      {requestModal && (
+        <DeleteRequestModal
+          place={requestModal}
+          onClose={() => setRequestModal(null)}
+          onSubmit={handleSubmitDeleteRequest}
+        />
+      )}
       {/* ── DESKTOP ── */}
       <div className="hidden md:block space-y-4">
 
@@ -383,6 +470,8 @@ export default function PlacesTable({ places }: { places: any[] }) {
                   <SortableHeader label="Rating" field="rating" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader label="Status" field="status" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader label="Views" field="views_count" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                  <SortableHeader label="Dibuat" field="created_at" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+                  <SortableHeader label="Ditambahkan oleh" field="created_by_name" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Aksi</th>
                 </tr>
               </thead>
@@ -470,6 +559,23 @@ export default function PlacesTable({ places }: { places: any[] }) {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{place.views_count ?? 0}</td>
                       <td className="px-4 py-3">
+                        {place.created_at ? (
+                          <div>
+                            <p className="text-xs text-gray-700">
+                              {new Date(place.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {new Date(place.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-sm text-gray-700">{place.created_by_name ?? <span className="text-gray-400">—</span>}</span>
+                      </td>
+                      <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-2">
                           {!editMode && !addMode && (
                             <Link href={`/admin/places/${place.id}/edit`}
@@ -477,7 +583,10 @@ export default function PlacesTable({ places }: { places: any[] }) {
                               <Pencil size={16} />
                             </Link>
                           )}
-                          <button onClick={() => handleDelete(place.id, place.name)} disabled={deleting === place.id}
+                          <button
+                            onClick={() => handleDelete(place.id, place.name)}
+                            disabled={deleting === place.id}
+                            title={isSuperUser ? 'Hapus' : 'Minta Hapus'}
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50">
                             <Trash2 size={16} />
                           </button>
@@ -513,9 +622,15 @@ export default function PlacesTable({ places }: { places: any[] }) {
                 {place.location && (
                   <p className="text-xs text-gray-400 mt-0.5">📍 {place.location}</p>
                 )}
-                <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500">
                   <span className="text-yellow-600 font-medium">⭐ {place.rating || '0.0'}</span>
                   <span>👁 {place.views_count ?? 0} views</span>
+                  {place.created_at && (
+                    <span>🗓 {new Date(place.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  )}
+                  {place.created_by_name && (
+                    <span>👤 {place.created_by_name}</span>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-1 flex-shrink-0">
@@ -525,7 +640,7 @@ export default function PlacesTable({ places }: { places: any[] }) {
                 </Link>
                 <button onClick={() => handleDelete(place.id, place.name)} disabled={deleting === place.id}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-medium hover:bg-red-100 transition-all disabled:opacity-50">
-                  <Trash2 size={13} /> Hapus
+                  <Trash2 size={13} /> {isSuperUser ? 'Hapus' : 'Minta Hapus'}
                 </button>
               </div>
             </div>

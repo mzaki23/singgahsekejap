@@ -3,6 +3,7 @@
 import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import NotificationBell from './NotificationBell';
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin/dashboard': 'Dashboard',
@@ -34,8 +35,11 @@ export default function MobileHeader({ onMenuClick }: { onMenuClick: () => void 
         <span className="font-semibold text-gray-900">{title}</span>
       </div>
 
-      <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-sm">
-        {session?.user?.name?.charAt(0).toUpperCase() ?? '?'}
+      <div className="flex items-center gap-1">
+        <NotificationBell />
+        <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-sm">
+          {session?.user?.name?.charAt(0).toUpperCase() ?? '?'}
+        </div>
       </div>
     </header>
   );

@@ -9,8 +9,15 @@ export default function Navbar() {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [lang, setLang] = useState<'id' | 'en'>('id');
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => { setLang(getCookieLang()); }, []);
+
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > 10); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   function toggleLang() {
     const next = lang === 'id' ? 'en' : 'id';
@@ -27,31 +34,26 @@ export default function Navbar() {
   ];
 
   return (
-    <>
+    <div className="fixed top-0 left-0 right-0 z-[100]">
       <nav
-        className="bg-white flex justify-between items-center sticky top-0 z-[100] border-b-4 border-text-dark"
+        className="flex justify-between items-center transition-all duration-300"
         style={{
           padding: '15px 30px',
-          boxShadow: '4px 4px 0px #FFE66D, 0 4px 20px rgba(0,0,0,0.1)',
+          background: scrolled ? 'white' : 'transparent',
+          borderBottom: scrolled ? '4px solid #2C3E50' : 'none',
+          boxShadow: scrolled ? '4px 4px 0px #FFE66D, 0 4px 20px rgba(0,0,0,0.1)' : 'none',
         }}
       >
         {/* Logo */}
         <div
-          className="font-display text-primary relative"
+          className="font-display transition-colors duration-300"
           style={{
-            fontSize: 'clamp(28px, 5vw, 36px)',
+            fontSize: 'clamp(24px, 4vw, 30px)',
             letterSpacing: '2px',
-            textShadow: '3px 3px 0px #FFE66D, 6px 6px 0px #4ECDC4',
-            transform: 'rotate(-2deg)',
+            color: scrolled ? 'var(--color-primary, #6B9CFF)' : 'white',
           }}
         >
           Singgah Sekejap
-          <span
-            className="absolute animate-sparkle"
-            style={{ top: '-10px', right: '-25px', fontSize: '20px' }}
-          >
-            ✨
-          </span>
         </div>
 
         {/* Desktop Nav */}
@@ -113,7 +115,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div
-          className="md:hidden bg-white border-b-4 border-text-dark flex flex-col gap-3 z-[99]"
+          className="md:hidden bg-white border-b-4 border-text-dark flex flex-col gap-3"
           style={{ padding: '15px 20px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
         >
           {navLinks.map((item) => (
@@ -153,6 +155,6 @@ export default function Navbar() {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }

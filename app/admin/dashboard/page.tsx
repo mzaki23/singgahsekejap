@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/next-auth';
 import { queries } from '@/lib/db';
 import Link from 'next/link';
 import { MapPin, MessageSquare, Eye, Star, Plus, ArrowRight } from 'lucide-react';
+import RecentActivitySection from '@/components/admin/RecentActivitySection';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -112,25 +113,7 @@ export default async function DashboardPage() {
         {/* Recent Activity */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h2 className="font-semibold text-gray-900 mb-4">Recent Activity</h2>
-          <div className="space-y-3">
-            {recentAudit.length === 0 && (
-              <p className="text-sm text-gray-400">Belum ada aktivitas.</p>
-            )}
-            {recentAudit.map((log: any) => (
-              <div key={log.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
-                <div className="w-2 h-2 rounded-full bg-indigo-400 mt-2 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-gray-700">
-                    <span className="font-medium">{log.user_name || 'System'}</span>
-                    {' '}{log.action} {log.resource_type ? `${log.resource_type} #${log.resource_id}` : ''}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {new Date(log.created_at).toLocaleString('id-ID')}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <RecentActivitySection logs={recentAudit} />
         </div>
       </div>
 

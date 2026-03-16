@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { CATEGORY_CONFIG } from '@/lib/data';
 import { queries } from '@/lib/db';
 import { getLang, translations } from '@/lib/i18n/server';
+import JelajahSearchWindow from '@/components/JelajahSearchWindow';
 
 export const metadata = {
   title: 'Jelajah Semua Kategori – Singgah Sekejap',
@@ -52,6 +53,8 @@ export default async function JelajahPage() {
           {t.backHome}
         </Link>
       </section>
+
+      <JelajahSearchWindow />
 
       {/* Category Grid */}
       <section className="max-w-6xl mx-auto px-6 py-12">

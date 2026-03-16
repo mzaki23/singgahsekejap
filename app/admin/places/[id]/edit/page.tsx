@@ -34,7 +34,7 @@ export default async function EditPlacePage({ params }: Props) {
         </div>
       </div>
 
-      <PlaceForm place={place} userId={session?.user?.id || '1'} />
+      <PlaceForm place={place} userId={session!.user.id} />
 
       {isSuperUser && <PlaceAuditHistory history={auditHistory} />}
     </div>

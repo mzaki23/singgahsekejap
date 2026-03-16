@@ -41,6 +41,7 @@ export default function FeaturedCarousel({ places }: Props) {
 
   return (
     <section
+      id="hits"
       className="relative border-b-[5px] border-dashed border-text-dark pt-[50px] px-4 pb-[50px] md:pt-[80px] md:px-[40px] md:pb-[80px]"
       style={{ background: '#FFF8DC' }}
     >

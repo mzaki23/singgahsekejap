@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const review = await queries.reviews.updateStatus(
       parseInt(params.id),
       status,
-      parseInt(reviewed_by) || parseInt(session.user?.id || '0')
+      parseInt(reviewed_by) || parseInt(session.user.id)
     );
     if (review?.place_id) {
       await queries.places.recalculateRating(review.place_id);

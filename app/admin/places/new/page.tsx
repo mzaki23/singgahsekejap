@@ -19,7 +19,7 @@ export default async function NewPlacePage() {
         </div>
       </div>
 
-      <PlaceForm userId={session?.user?.id || '1'} />
+      <PlaceForm userId={session!.user.id} />
     </div>
   );
 }

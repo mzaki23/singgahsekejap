@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                placeholder="admin@explorebatam.com"
+                placeholder="email@example.com"
                 disabled={loading}
               />
             </div>
@@ -121,9 +121,6 @@ export default function AdminLoginPage() {
           </form>
 
           <div className="pt-4 border-t border-gray-200 space-y-2">
-            <p className="text-xs text-gray-500 text-center">
-              Demo: admin@explorebatam.com / Admin123!
-            </p>
             <p className="text-sm text-gray-500 text-center">
               Belum punya akun?{' '}
               <a href="/admin/register" className="text-indigo-600 hover:underline font-medium">

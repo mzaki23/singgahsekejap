@@ -46,19 +46,76 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       new_data: place,
     });
 
+    if (session.user.role !== 'super_user') {
+      await queries.notifications.create({
+        type: 'place_updated',
+        title: 'Place Diperbarui',
+        message: `${session.user.name ?? 'Admin'} mengedit place "${place?.name ?? oldPlace?.name}"`,
+        link: `/admin/places/${params.id}/edit`,
+      }).catch(() => {});
+    }
+
     return NextResponse.json({ success: true, data: place });
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    await queries.places.delete(parseInt(params.id));
-    return NextResponse.json({ success: true });
+    const placeId = parseInt(params.id);
+    const place = await queries.places.getById(placeId);
+    if (!place) return NextResponse.json({ error: 'Place tidak ditemukan' }, { status: 404 });
+
+    // Super user: langsung hapus
+    if (session.user.role === 'super_user') {
+      await queries.places.delete(placeId);
+      await queries.audit.log({
+        user_id: parseInt(session.user.id),
+        action: 'delete_place',
+        resource_type: 'place',
+        resource_id: placeId,
+        old_data: place,
+      });
+      return NextResponse.json({ success: true, deleted: true });
+    }
+
+    // Admin biasa: cek apakah sudah ada request pending
+    const alreadyPending = await queries.deleteRequests.existsForPlace(placeId);
+    if (alreadyPending) {
+      return NextResponse.json({ error: 'Permintaan hapus sudah ada dan menunggu persetujuan' }, { status: 409 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    await queries.deleteRequests.create({
+      place_id: placeId,
+      place_name: place.name,
+      place_category: place.category,
+      requested_by: parseInt(session.user.id),
+      requested_by_name: session.user.name ?? 'Admin',
+      reason: body.reason,
+    });
+
+    await queries.audit.log({
+      user_id: parseInt(session.user.id),
+      action: 'request_delete_place',
+      resource_type: 'place',
+      resource_id: placeId,
+      old_data: place,
+      new_data: { reason: body.reason ?? null },
+    });
+
+    await queries.notifications.create({
+      type: 'delete_request',
+      title: 'Permintaan Hapus Place',
+      message: `${session.user.name ?? 'Admin'} meminta menghapus "${place.name}"${body.reason ? `: ${body.reason}` : ''}`,
+      link: '/admin/delete-requests',
+    }).catch(() => {});
+
+    return NextResponse.json({ success: true, deleted: false, pending: true });
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

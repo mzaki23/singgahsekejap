@@ -2,9 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getCookieLang, translations } from '@/lib/i18n/client';
 
 const FALLBACK_EXAMPLES = [
   'Pantai Nongsa', 'Nagoya Hill', 'Harbour Bay', 'Mie Tarempa',
@@ -69,45 +67,18 @@ type PlaceItem = {
   slug: string;
 };
 
-const FOLDERS = [
-  { label: 'MAKANAN', href: '/makanan', icon: '📁' },
-  { label: 'PANTAI',  href: '/pantai',  icon: '📁' },
-  { label: 'TAMAN',   href: '/taman',   icon: '📁' },
-  { label: 'SHOPPING',href: '/shopping',icon: '📁' },
-  { label: 'WISATA',  href: '/wisata',  icon: '📁' },
-];
-
-export default function HomeHero() {
+export default function JelajahSearchWindow() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [dbPlaces, setDbPlaces] = useState<PlaceItem[]>([]);
   const [suggestions, setSuggestions] = useState<PlaceItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [clock, setClock] = useState('');
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
-  const [lang, setLang] = useState<'id' | 'en'>('id');
   const [exampleNames, setExampleNames] = useState<string[]>([]);
   const searchBoxRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingText = useTypingPlaceholder(exampleNames);
 
-  useEffect(() => { setLang(getCookieLang()); }, []);
-
-  useEffect(() => {
-    function tick() {
-      const now = new Date();
-      let h = now.getHours();
-      const m = now.getMinutes().toString().padStart(2, '0');
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12 || 12;
-      setClock(`${h}:${m} ${ampm}`);
-    }
-    tick();
-    const id = setInterval(tick, 60000);
-    return () => clearInterval(id);
-  }, []);
-
-  // Fetch places from DB on mount
   useEffect(() => {
     fetch('/api/places?status=published')
       .then(r => r.json())
@@ -120,7 +91,6 @@ export default function HomeHero() {
           slug: p.slug,
         }));
         setDbPlaces(mapped);
-        // Ambil 12 nama acak untuk typewriter
         const names = mapped.map((p: PlaceItem) => p.name);
         const shuffled = names.sort(() => Math.random() - 0.5).slice(0, 12);
         setExampleNames(shuffled);
@@ -128,16 +98,13 @@ export default function HomeHero() {
       .catch(() => {});
   }, []);
 
-  // Update dropdown position when shown or on scroll/resize
   useEffect(() => {
     if (!showSuggestions) return;
-
     function updateRect() {
       if (searchBoxRef.current) {
         setDropdownRect(searchBoxRef.current.getBoundingClientRect());
       }
     }
-
     updateRect();
     window.addEventListener('scroll', updateRect, true);
     window.addEventListener('resize', updateRect);
@@ -190,8 +157,6 @@ export default function HomeHero() {
     }
   }
 
-  const t = translations[lang].hero;
-
   const dropdown = showSuggestions && dropdownRect ? createPortal(
     <div
       style={{
@@ -229,8 +194,8 @@ export default function HomeHero() {
         <div className="flex items-center gap-[10px]" style={{ padding: '12px 20px' }}>
           <div style={{ fontSize: '20px' }}>😅</div>
           <div>
-            <div className="font-bold text-text-dark" style={{ fontSize: '15px' }}>{t.notFound}</div>
-            <div style={{ fontSize: '12px', color: '#666' }}>{t.notFoundSub}</div>
+            <div className="font-bold text-text-dark" style={{ fontSize: '15px' }}>Tempat tidak ditemukan</div>
+            <div style={{ fontSize: '12px', color: '#666' }}>Coba kata kunci lain</div>
           </div>
         </div>
       )}
@@ -239,116 +204,21 @@ export default function HomeHero() {
   ) : null;
 
   return (
-    <section
-      className="relative flex flex-col items-center justify-center overflow-hidden pt-[30px] px-4 pb-20 md:pt-[50px] md:px-[40px] md:pb-[90px]"
-      style={{ minHeight: '100vh', borderBottom: '5px solid #6B9CFF' }}
+    <div
+      className="px-4 py-8"
+      style={{ background: 'linear-gradient(to bottom, #6B9CFF, #4A83F6)', borderBottom: '5px solid #6B9CFF' }}
     >
-      {/* Background video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ zIndex: 0 }}
-      >
-        <source src="/videolooping.mp4" type="video/mp4" />
-      </video>
-      {/* Overlay agar konten tetap terbaca */}
-      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)', zIndex: 1 }} />
-      {/* Desktop folder icons — 2 kolom, tengah vertikal */}
+      {/* OS Window */}
       <div
-        className="absolute z-[5] hidden md:grid"
-        style={{
-          left: '20px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '16px',
-        }}
-      >
-        {[...FOLDERS, { label: 'HITS', href: '#hits', icon: '🔥', isHits: true }, { label: 'PETA', href: '#peta', icon: '🗺️', isMaps: true }].map((f, idx) => {
-          const isMaps = 'isMaps' in f;
-          const isHits = 'isHits' in f;
-          const isAnchor = isMaps || isHits;
-          const El = isAnchor ? 'a' : Link;
-          const labelBg = isMaps ? 'rgba(136,201,73,0.9)' : isHits ? 'rgba(255,100,130,0.9)' : 'rgba(107,156,255,0.85)';
-          return (
-            <El
-              key={f.label}
-              href={f.href}
-              {...(isAnchor ? {} : {})}
-              style={{ textDecoration: 'none', animation: `heroSlideLeft 0.4s ease ${(idx + 1) * 0.08}s both` }}
-            >
-              <div className="flex flex-col items-center gap-[4px] cursor-pointer transition-transform hover:scale-110 w-[70px]">
-                <div style={{ fontSize: '38px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.25))' }}>
-                  {f.icon}
-                </div>
-                <div
-                  className="font-pixel text-white text-center w-full"
-                  style={{
-                    background: labelBg,
-                    padding: '2px 6px',
-                    fontSize: '11px',
-                    border: '2px solid white',
-                    borderRadius: '4px',
-                    boxShadow: '2px 2px 0px rgba(0,0,0,0.2)',
-                    letterSpacing: '0.5px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  {f.label}
-                </div>
-              </div>
-            </El>
-          );
-        })}
-      </div>
-
-      {/* Mobile folder grid — 3 kolom x 2 baris */}
-      <div
-        className="md:hidden grid grid-cols-3 gap-x-[16px] gap-y-[12px] w-full max-w-[280px] mx-auto mb-5 z-[5] relative"
-        style={{ animation: 'heroSlideDown 0.4s ease 0.1s both' }}
-      >
-        {FOLDERS.map(f => (
-          <Link key={f.label} href={f.href} style={{ textDecoration: 'none' }}>
-            <div className="flex flex-col items-center gap-[4px]">
-              <div style={{ fontSize: '30px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.15))' }}>{f.icon}</div>
-              <div
-                className="font-pixel text-white text-center w-full"
-                style={{
-                  background: 'rgba(107,156,255,0.85)',
-                  padding: '2px 4px',
-                  fontSize: '10px',
-                  border: '2px solid white',
-                  borderRadius: '4px',
-                  boxShadow: '2px 2px 0px rgba(0,0,0,0.15)',
-                  letterSpacing: '0.5px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {f.label}
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Main OS Window */}
-      <div
-        className="relative z-[10] w-full overflow-hidden transition-transform hover:rotate-0"
+        className="relative overflow-hidden transition-transform hover:rotate-0"
         style={{
           background: '#E8F1FF',
           border: '4px solid #6B9CFF',
           borderRadius: '12px',
-          maxWidth: '650px',
-          boxShadow: '10px 10px 0 rgba(107, 156, 255, 0.4)',
-          transform: 'rotate(-1deg)',
-          animation: 'heroWindowIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
+          maxWidth: '600px',
+          margin: '0 auto',
+          boxShadow: '10px 10px 0 rgba(107,156,255,0.4)',
+          transform: 'rotate(-0.5deg)',
         }}
       >
         {/* Title Bar */}
@@ -359,9 +229,9 @@ export default function HomeHero() {
             padding: '8px 15px',
           }}
         >
-          <div className="font-pixel text-white flex items-center gap-2" style={{ fontSize: '16px', letterSpacing: '1px', textShadow: '1px 1px 0px #3461C0' }}>
-            ★ Singgah_ke_kota_batam.exe
-          </div>
+          <span className="font-pixel text-white" style={{ fontSize: '15px', letterSpacing: '1px', textShadow: '1px 1px 0px #3461C0' }}>
+            ★ cari_tempat.exe
+          </span>
           <div className="flex gap-[6px]">
             {['_', '□', '×'].map((btn, i) => (
               <div
@@ -374,6 +244,7 @@ export default function HomeHero() {
                   borderRadius: '4px',
                   border: `2px solid ${i === 2 ? '#D84A8B' : '#6B9CFF'}`,
                   fontSize: '14px',
+                  fontWeight: 900,
                   boxShadow: 'inset -2px -2px 0px rgba(0,0,0,0.1)',
                 }}
               >
@@ -383,30 +254,11 @@ export default function HomeHero() {
           </div>
         </div>
 
-        {/* Window Content */}
+        {/* Search Content */}
         <div
-          className="text-center relative px-4 py-[25px] md:px-[30px] md:py-[40px]"
-          style={{
-            background: 'linear-gradient(to bottom, #FFFFFF, #E8F1FF)',
-          }}
+          className="px-6 py-6"
+          style={{ background: 'linear-gradient(to bottom, #ffffff, #E8F1FF)' }}
         >
-
-          <div
-            className="font-pixel text-[#5579C9] inline-block"
-            style={{
-              fontSize: 'clamp(13px, 3.5vw, 18px)',
-              marginBottom: '30px',
-              background: 'white',
-              padding: '8px 20px',
-              border: '2px dashed #8EB3FF',
-              borderRadius: '20px',
-              boxShadow: '3px 3px 0 rgba(0,0,0,0.05)',
-              animation: 'heroSlideUp 0.4s ease 0.5s both',
-            }}
-          >
-            {t.tagline}
-          </div>
-
           {/* Search Box */}
           <div
             ref={searchBoxRef}
@@ -418,8 +270,6 @@ export default function HomeHero() {
               padding: '6px',
               gap: '8px',
               boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.05)',
-              maxWidth: '500px',
-              animation: 'heroSlideUp 0.4s ease 0.65s both',
             }}
           >
             <div className="relative flex-1 flex items-center">
@@ -478,114 +328,13 @@ export default function HomeHero() {
                 (e.currentTarget as HTMLElement).style.borderColor = '#88C949';
               }}
             >
-              {t.searchBtn}
+              CARI
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile — HITS & PETA di bawah window */}
-      <div
-        className="md:hidden flex justify-center gap-8 mt-5 z-[5] relative"
-        style={{ animation: 'heroSlideUp 0.4s ease 0.7s both' }}
-      >
-        {[
-          { label: 'HITS', href: '#hits', icon: '🔥', labelBg: 'rgba(255,100,130,0.9)' },
-          { label: 'PETA', href: '#peta', icon: '🗺️', labelBg: 'rgba(136,201,73,0.9)' },
-        ].map(f => (
-          <a key={f.label} href={f.href} style={{ textDecoration: 'none' }}>
-            <div className="flex flex-col items-center gap-[4px]">
-              <div style={{ fontSize: '34px', filter: 'drop-shadow(2px 2px 0px rgba(0,0,0,0.15))' }}>{f.icon}</div>
-              <div
-                className="font-pixel text-white text-center"
-                style={{
-                  background: f.labelBg,
-                  padding: '2px 8px',
-                  fontSize: '10px',
-                  border: '2px solid white',
-                  borderRadius: '4px',
-                  boxShadow: '2px 2px 0px rgba(0,0,0,0.15)',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                {f.label}
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
-
-      {/* Taskbar */}
-      <div
-        className="absolute bottom-0 left-0 w-full flex items-center z-[20] font-pixel text-white"
-        style={{
-          height: '42px',
-          background: 'linear-gradient(to bottom, #BEEA9A, #88C949)',
-          borderTop: '3px solid white',
-          padding: '0 10px',
-          gap: '8px',
-          textShadow: '1px 1px 0 #5E8A32',
-          animation: 'heroSlideDown 0.4s ease 0s both',
-        }}
-      >
-        {/* START button */}
-        <div
-          className="flex items-center gap-1 cursor-pointer font-bold flex-shrink-0"
-          style={{
-            background: 'linear-gradient(to bottom, #8EB3FF, #5A8DF3)',
-            border: '2px solid white',
-            borderRadius: '20px',
-            padding: '3px 12px',
-            fontSize: '13px',
-            boxShadow: '2px 2px 0 rgba(0,0,0,0.15)',
-          }}
-        >
-          ★ START
-        </div>
-
-        {/* Active window label — terpotong di mobile */}
-        <div
-          className="flex items-center gap-1 min-w-0"
-          style={{
-            background: 'white',
-            color: '#6B9CFF',
-            padding: '3px 10px',
-            borderRadius: '4px',
-            border: '2px solid #6B9CFF',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            textShadow: 'none',
-            boxShadow: 'inset 2px 2px 0 rgba(0,0,0,0.1)',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            flex: '1 1 0',
-            maxWidth: '100%',
-          }}
-        >
-          <span className="flex-shrink-0">📁</span>
-          <span className="hidden sm:inline ml-1">Singgah_ke_kota_batam</span>
-          <span className="sm:hidden ml-1">Singgah.exe</span>
-        </div>
-
-        {/* Clock */}
-        {clock && (
-          <div
-            className="flex-shrink-0"
-            style={{
-              background: '#7DBA3F',
-              padding: '3px 10px',
-              borderRadius: '4px',
-              fontSize: '12px',
-            }}
-          >
-            {clock}
-          </div>
-        )}
-      </div>
-
-      {/* Portal dropdown — rendered to document.body, tidak ter-clip apapun */}
       {dropdown}
-    </section>
+    </div>
   );
 }

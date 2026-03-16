@@ -1,14 +1,17 @@
 import { queries } from '@/lib/db';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
-import PlacesTable from '@/components/admin/PlacesTable';
+import { Plus } from 'lucide-react';
+import PlacesViewToggle from '@/components/admin/PlacesViewToggle';
 import CsvImportExport from '@/components/admin/CsvImportExport';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/next-auth';
 
 interface Props {
   searchParams: { category?: string; status?: string; search?: string };
 }
 
 export default async function PlacesPage({ searchParams }: Props) {
+  const session = await getServerSession(authOptions);
   const places = await queries.places.getAll({
     category: searchParams.category,
     status: searchParams.status,
@@ -80,8 +83,8 @@ export default async function PlacesPage({ searchParams }: Props) {
         </form>
       </div>
 
-      {/* Table */}
-      <PlacesTable places={places} />
+      {/* Table / Map toggle */}
+      <PlacesViewToggle places={places} role={session?.user?.role} />
     </div>
   );
 }

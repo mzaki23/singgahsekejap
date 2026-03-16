@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import AdminSidebar from './Sidebar';
 import MobileHeader from './MobileHeader';
+import NotificationBell from './NotificationBell';
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -46,6 +47,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       `}>
         {/* Mobile Header */}
         <MobileHeader onMenuClick={() => setSidebarOpen(true)} />
+
+        {/* Desktop Top Bar */}
+        <div className="hidden md:flex items-center justify-end px-6 py-3 border-b border-gray-200 bg-white">
+          <NotificationBell />
+        </div>
 
         {/* Page Content */}
         <div className="flex-1">
