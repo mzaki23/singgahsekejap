@@ -1,4 +1,5 @@
 import { queries } from '@/lib/db';
+import { unstable_noStore as noStore } from 'next/cache';
 import Navbar from '@/components/Navbar';
 import HomeHero from '@/components/HomeHero';
 import FeaturedCarousel from '@/components/FeaturedCarousel';
@@ -10,6 +11,7 @@ import Link from 'next/link';
 import { getLang, translations } from '@/lib/i18n/server';
 
 export default async function HomePage() {
+  noStore();
   const lang = await getLang();
   const t = translations[lang];
   const allPlaces = await queries.places.getAll({ status: 'published' }).catch(() => []);
